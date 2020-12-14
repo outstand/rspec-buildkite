@@ -30,6 +30,7 @@ module RSpec::Buildkite
     def start(notification)
       if ENV["BUILDKITE"]
         puts "rspec-buildkite has started."
+        `ls -l /usr/local/bin/`
       end
     end
 
