@@ -30,7 +30,6 @@ module RSpec::Buildkite
     def start(notification)
       if ENV["BUILDKITE"]
         puts "rspec-buildkite has started."
-        `ls -l /usr/local/bin/`
       end
     end
 
@@ -41,7 +40,7 @@ module RSpec::Buildkite
     private
 
     def thread
-      cmd = TTY::Command.new
+      cmd = TTY::Command.new(printer: :quiet)
       while notification = @queue.pop
         break if notification == :close
 
