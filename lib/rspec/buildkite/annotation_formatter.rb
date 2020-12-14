@@ -33,21 +33,29 @@ module RSpec::Buildkite
     private
 
     def thread
+      cmd = TTY::Command.new
       while notification = @queue.pop
         break if notification == :close
 
         if notification
-          system "buildkite-agent", "annotate",
-            "--context", "rspec",
-            "--style", "error",
-            "--append",
-            format_failure(notification),
-            out: :close # only display errors
+          begin
+            args = [
+              "buildkite-agent",
+              "annotate",
+              "--context", "rspec",
+              "--style", "error",
+              "--append",
+              format_failure(notification),
+              only_output_on_error: true
+            ]
+            cmd.run(args)
+          rescue TTY::Command::ExitError => e
+            puts e.message
+          rescue Interrupt
+            break
+          end
         end
       end
-    rescue
-      puts "Warning: Couldn't create Buildkite annotations:"
-      puts "  " << $!.to_s, "    " << $!.backtrace.join("\n    ")
     end
 
     def format_failure(notification)
