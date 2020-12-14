@@ -2,6 +2,7 @@ require "thread"
 
 require "rspec/core"
 require "rspec/buildkite/recolorizer"
+require 'tty-command'
 
 module RSpec::Buildkite
   # Create a Buildkite annotation for RSpec failures
@@ -12,7 +13,7 @@ module RSpec::Buildkite
   # Uses a background Thread so we don't block the build.
   #
   class AnnotationFormatter
-    RSpec::Core::Formatters.register self, :example_failed
+    RSpec::Core::Formatters.register self, :start, :example_failed
 
     def initialize(output)
       # We don't actually use this, but keep a reference anyway
@@ -23,6 +24,12 @@ module RSpec::Buildkite
         @queue = Queue.new
         @thread = Thread.new(&method(:thread))
         at_exit { @queue.push(:close); @thread.join }
+      end
+    end
+
+    def start(notification)
+      if ENV["BUILDKITE"]
+        puts "rspec-buildkite has started."
       end
     end
 
