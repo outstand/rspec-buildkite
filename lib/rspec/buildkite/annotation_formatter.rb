@@ -56,7 +56,7 @@ module RSpec::Buildkite
               format_failure(notification),
               only_output_on_error: true
             ]
-            cmd.run(args)
+            cmd.run(*args)
           rescue TTY::Command::ExitError => e
             puts e.message
           rescue Interrupt
