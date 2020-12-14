@@ -2,6 +2,8 @@ version: "3.8"
 services:
   project:
     build: .
+    environment:
+      BUILDKITE:
     volumes:
       - .:/srv
       - "/var/lib/buildkite-agent/buildkite-agent:/usr/local/bin/buildkite-agent"
