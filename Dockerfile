@@ -15,7 +15,7 @@ RUN addgroup -g 1000 -S srv && \
 
 WORKDIR /srv
 RUN chown -R srv:srv /srv
-COPY --chown=srv:srv Gemfile Gemfile.lock rspec-buildkite.gemspec /srv/
+COPY --chown=srv:srv Gemfile rspec-buildkite.gemspec /srv/
 COPY --chown=srv:srv lib/rspec/buildkite/version.rb /srv/lib/rspec/buildkite/version.rb
 
 USER srv
