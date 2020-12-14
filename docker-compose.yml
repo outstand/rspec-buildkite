@@ -4,3 +4,4 @@ services:
     build: .
     volumes:
       - .:/srv
+      - "/var/lib/buildkite-agent/buildkite-agent:/usr/local/bin/buildkite-agent"
