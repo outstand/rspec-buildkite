@@ -1,4 +1,8 @@
+env:
+  PLUGIN_DOCKER_COMPOSE_VERSION: "4621e87e1a2bc348acfda29dd569144bd4220adc"
+
 steps:
-  - command: bundle exec rake
-    env:
-      BUNDLE_AUTO_INSTALL: true
+  - command: rake
+    plugins:
+      - https://github.com/outstand/docker-compose-buildkite-plugin.git#${PLUGIN_DOCKER_COMPOSE_VERSION}:
+          run: project

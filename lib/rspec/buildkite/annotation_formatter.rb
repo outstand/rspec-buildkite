@@ -2,6 +2,7 @@ require "thread"
 
 require "rspec/core"
 require "rspec/buildkite/recolorizer"
+require 'tty-command'
 
 module RSpec::Buildkite
   # Create a Buildkite annotation for RSpec failures
@@ -12,7 +13,7 @@ module RSpec::Buildkite
   # Uses a background Thread so we don't block the build.
   #
   class AnnotationFormatter
-    RSpec::Core::Formatters.register self, :example_failed
+    RSpec::Core::Formatters.register self, :start, :example_failed
 
     def initialize(output)
       # We don't actually use this, but keep a reference anyway
@@ -26,6 +27,12 @@ module RSpec::Buildkite
       end
     end
 
+    def start(notification)
+      if ENV["BUILDKITE"]
+        puts "rspec-buildkite has started."
+      end
+    end
+
     def example_failed(notification)
       @queue.push(notification) if @queue
     end
@@ -33,21 +40,29 @@ module RSpec::Buildkite
     private
 
     def thread
+      cmd = TTY::Command.new(printer: :quiet)
       while notification = @queue.pop
         break if notification == :close
 
         if notification
-          system "buildkite-agent", "annotate",
-            "--context", "rspec",
-            "--style", "error",
-            "--append",
-            format_failure(notification),
-            out: :close # only display errors
+          begin
+            args = [
+              "buildkite-agent",
+              "annotate",
+              "--context", "rspec",
+              "--style", "error",
+              "--append",
+              format_failure(notification),
+              only_output_on_error: true
+            ]
+            cmd.run(*args)
+          rescue TTY::Command::ExitError => e
+            puts e.message
+          rescue Interrupt
+            break
+          end
         end
       end
-    rescue
-      puts "Warning: Couldn't create Buildkite annotations:"
-      puts "  " << $!.to_s, "    " << $!.backtrace.join("\n    ")
     end
 
     def format_failure(notification)
